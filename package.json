@@ -1,0 +1,8 @@
+{
+  "name": "trackmyapply",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "extension"
+  ]
+}

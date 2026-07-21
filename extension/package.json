@@ -1,0 +1,6 @@
+{
+  "name": "extension",
+  "private": true,
+  "version": "0.0.0",
+  "description": "TrackMyApply Chrome Manifest V3 extension — scaffolded in Phase 3 (Week 6-9)."
+}

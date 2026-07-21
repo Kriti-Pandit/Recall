@@ -1,0 +1,28 @@
+# Node
+node_modules/
+dist/
+build/
+.vite/
+npm-debug.log*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Env
+.env
+.env.local
+*.env
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Uploaded files (local dev resume storage)
+backend/uploads/
