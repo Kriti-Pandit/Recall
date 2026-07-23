@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.core.config import settings
@@ -8,7 +8,8 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 class Base(DeclarativeBase):
-    pass
+    # schema.sql uses TEXT (not VARCHAR) for every string column.
+    type_annotation_map = {str: Text}
 
 
 def get_db():

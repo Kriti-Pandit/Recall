@@ -32,7 +32,20 @@ npm run dev --workspace frontend
 Frontend dev server proxies `/api/*` to `http://localhost:8000`.
 
 ### Database
-Apply [`backend/db/schema.sql`](backend/db/schema.sql) to a PostgreSQL instance and set `DATABASE_URL` in `backend/.env` accordingly. See [`docs/schema.md`](docs/schema.md) for the ER diagram and design notes.
+
+1. Create a Postgres database and an app-specific role (don't use the `postgres` superuser):
+   ```sql
+   CREATE ROLE trackmyapply_app LOGIN PASSWORD 'choose-a-password';
+   CREATE DATABASE trackmyapply OWNER trackmyapply_app;
+   ```
+2. Set `DATABASE_URL` in `backend/.env` (copy from `.env.example`) to point at it.
+3. Apply the schema via Alembic (this is the source of truth going forward; [`backend/db/schema.sql`](backend/db/schema.sql) + [`docs/schema.md`](docs/schema.md) are the human-readable reference the migrations are generated from):
+   ```
+   cd backend
+   alembic upgrade head
+   ```
+
+To change the schema later: edit the SQLAlchemy models in `backend/app/models/`, then run `alembic revision --autogenerate -m "..."` and `alembic upgrade head`. Keep `backend/db/schema.sql` and `docs/schema.md` in sync with any model changes.
 
 ## Progress
 

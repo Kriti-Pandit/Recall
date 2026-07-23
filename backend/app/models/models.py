@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, ForeignKey, Numeric, Text, func
+from sqlalchemy import Date, DateTime, Enum, ForeignKey, Index, Numeric, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -41,15 +41,21 @@ class Resume(Base):
 
 class Application(Base):
     __tablename__ = "applications"
+    __table_args__ = (
+        Index("idx_applications_user_company", "user_id", "company_name"),
+        Index("idx_applications_user_status", "user_id", "status"),
+    )
 
     id: Mapped[uuid.UUID] = uuid_pk()
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     company_name: Mapped[str] = mapped_column(nullable=False)
     role_title: Mapped[str] = mapped_column(nullable=False)
-    platform: Mapped[Platform] = mapped_column(nullable=False)
-    application_type: Mapped[ApplicationType] = mapped_column(default=ApplicationType.standard)
-    status: Mapped[Status] = mapped_column(default=Status.applied)
-    salary_type: Mapped[SalaryType | None]
+    platform: Mapped[Platform] = mapped_column(Enum(Platform, name="platform_enum"), nullable=False)
+    application_type: Mapped[ApplicationType] = mapped_column(
+        Enum(ApplicationType, name="application_type_enum"), default=ApplicationType.standard
+    )
+    status: Mapped[Status] = mapped_column(Enum(Status, name="status_enum"), default=Status.applied)
+    salary_type: Mapped[SalaryType | None] = mapped_column(Enum(SalaryType, name="salary_type_enum"))
     salary_fixed_lpa: Mapped[float | None] = mapped_column(Numeric(6, 2))
     salary_variable_lpa: Mapped[float | None] = mapped_column(Numeric(6, 2))
     stipend_monthly: Mapped[int | None]
@@ -111,10 +117,11 @@ class ReferralDetails(Base):
 
 class Interaction(Base):
     __tablename__ = "interactions"
+    __table_args__ = (Index("idx_interactions_application", "application_id", "occurred_at"),)
 
     id: Mapped[uuid.UUID] = uuid_pk()
     application_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("applications.id", ondelete="CASCADE"))
-    type: Mapped[InteractionType] = mapped_column(nullable=False)
+    type: Mapped[InteractionType] = mapped_column(Enum(InteractionType, name="interaction_type_enum"), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

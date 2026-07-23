@@ -1,5 +1,6 @@
 -- TrackMyApply — PostgreSQL schema
 -- Phase 0 (Week 1-2) deliverable. Matches docs/schema.md ER diagram.
+-- Reference only — db/migrations/ (Alembic) is the source of truth applied to real databases.
 
 CREATE TYPE platform_enum AS ENUM (
     'linkedin', 'naukri', 'campus_drive', 'referral', 'company_website', 'other'
