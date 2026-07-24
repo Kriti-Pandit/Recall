@@ -22,8 +22,8 @@ class User(Base):
     google_id: Mapped[str | None] = mapped_column(unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    resumes: Mapped[list["Resume"]] = relationship(back_populates="user")
-    applications: Mapped[list["Application"]] = relationship(back_populates="user")
+    resumes: Mapped[list["Resume"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    applications: Mapped[list["Application"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
 
 class Resume(Base):
@@ -67,11 +67,17 @@ class Application(Base):
 
     user: Mapped["User"] = relationship(back_populates="applications")
     resume: Mapped["Resume | None"] = relationship()
-    job_description: Mapped["JobDescription"] = relationship(back_populates="application", uselist=False)
-    campus_drive_details: Mapped["CampusDriveDetails | None"] = relationship(back_populates="application")
-    referral_details: Mapped["ReferralDetails | None"] = relationship(back_populates="application")
-    interactions: Mapped[list["Interaction"]] = relationship(back_populates="application")
-    contacts: Mapped[list["Contact"]] = relationship(back_populates="application")
+    job_description: Mapped["JobDescription"] = relationship(
+        back_populates="application", uselist=False, cascade="all, delete-orphan"
+    )
+    campus_drive_details: Mapped["CampusDriveDetails | None"] = relationship(
+        back_populates="application", cascade="all, delete-orphan"
+    )
+    referral_details: Mapped["ReferralDetails | None"] = relationship(
+        back_populates="application", cascade="all, delete-orphan"
+    )
+    interactions: Mapped[list["Interaction"]] = relationship(back_populates="application", cascade="all, delete-orphan")
+    contacts: Mapped[list["Contact"]] = relationship(back_populates="application", cascade="all, delete-orphan")
 
 
 class JobDescription(Base):

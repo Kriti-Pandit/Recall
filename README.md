@@ -26,10 +26,23 @@ uvicorn app.main:app --reload --port 8000
 ### Frontend
 ```
 npm install
+cp frontend/.env.example frontend/.env   # set VITE_GOOGLE_CLIENT_ID, see Auth below
 npm run dev --workspace frontend
 ```
 
 Frontend dev server proxies `/api/*` to `http://localhost:8000`.
+
+### Auth (Google Sign-In)
+
+Auth is "Sign in with Google" via [Google Identity Services](https://developers.google.com/identity/gsi/web) — the frontend gets an ID token from Google, sends it to `POST /api/auth/google`, and the backend verifies it and issues its own JWT (used as `Authorization: Bearer <token>` on subsequent API calls).
+
+To set up your own Google OAuth client:
+1. [Google Cloud Console](https://console.cloud.google.com) → create/select a project.
+2. **APIs & Services → OAuth consent screen** → User Type: External → fill in app name + your email → save (Testing mode is fine).
+3. **APIs & Services → Credentials → Create Credentials → OAuth client ID** → type: Web application → Authorized JavaScript origins: `http://localhost:5173` → Authorized redirect URIs: `http://localhost:5173`.
+4. Copy the Client ID into both:
+   - `frontend/.env`: `VITE_GOOGLE_CLIENT_ID=...`
+   - `backend/.env`: `GOOGLE_CLIENT_ID=...` (backend verifies the token's audience against this)
 
 ### Database
 

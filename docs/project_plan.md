@@ -36,13 +36,18 @@ Per roadmap §Phase 0: first-class support for **LinkedIn**, **Naukri**, and **m
 - Confirmed `/api/health/db` returns `{"status":"ok","database":"connected"}`.
 - **Note:** `backend/.env` now holds a real local `DATABASE_URL` with the generated app-role password. It's gitignored and was never committed. Whoever else sets this up locally should follow the new "Database" section in the root `README.md` (create their own role/db, `alembic upgrade head`) rather than share credentials.
 
-### Week 3 — planned (Phase 1: Core Data Model & Manual Tracker)
-- Build CRUD screens: Add / Edit / Delete application.
-- Fields: company, role, JD text, salary, platform, date, status, notes.
-- List view with sorting (by date, status, company).
-- Search bar (by company name).
-- Basic authentication.
+### Week 3 (2026-07-24) — Phase 1: Core Data Model & Manual Tracker
+- **Auth:** "Sign in with Google" (Google Identity Services) chosen over a plain email/password scheme, per the roadmap's suggested stack. Frontend gets a Google ID token, backend verifies it (`google-auth`) and issues its own JWT (`pyjwt`) for `Authorization: Bearer` on API calls. Requires a Google Cloud OAuth client — steps documented in the root `README.md` under "Auth". **Still waiting on the real Client ID** to be dropped into `frontend/.env` and `backend/.env` before real sign-in can be tested; everything else was verified with a manually-issued JWT in the meantime.
+- **Backend:** `POST /api/auth/google`, `GET /api/auth/me`, and full CRUD on `/api/applications` (list with `search`/`sort_by`/`sort_dir`, create, get, update, delete), all scoped to the authenticated user. Job description text is stored via the existing `job_descriptions` 1:1 table and surfaced as a flat `jd_text` field on the API.
+- **Bug found + fixed:** deleting an application 500'd with a `NotNullViolation` on `job_descriptions.application_id`. SQLAlchemy's ORM was trying to null out the child FK on parent delete instead of leaving it to Postgres's `ON DELETE CASCADE`. `passive_deletes=True` alone didn't fix it for the `uselist=False` one-to-one relationships in this SQLAlchemy version; switched to explicit `cascade="all, delete-orphan"` on the owned-child relationships (`job_description`, `campus_drive_details`, `referral_details`, `interactions`, `contacts` on `Application`; `resumes`, `applications` on `User`). No DB schema drift from this change — it's ORM-only config.
+- **Frontend:** React Router with a `ProtectedRoute` guard, `AuthContext` (JWT in `localStorage`), Login page (`@react-oauth/google`), applications list (search + sort + delete), and a shared add/edit form.
+- **Verified end-to-end via Playwright** (headless Chromium, since this machine has no browser-automation CLI preinstalled): logged-out `/` correctly redirects to `/login`; with a seeded JWT, add → search-filter → status edit → delete all worked with zero console errors. Screenshots confirmed visually.
+- Company-search deliverable met: added test applications, searched by company name, got instant, correct results (Phase 1's stated milestone demo).
+
+### Week 4 — planned
+- Wire the real Google Client ID once provided; test actual Google sign-in end-to-end (not just the JWT-seeded path).
 - Set up GitHub project board with Phase 1–8 columns from the roadmap.
+- Start Phase 2 (Week 5–6): resume upload + versioning, attach a resume to an application.
 
 ## Deliverable status (Phase 0)
 
@@ -52,3 +57,11 @@ Per roadmap §Phase 0: first-class support for **LinkedIn**, **Naukri**, and **m
 - [x] Set up dev environment: React frontend, backend skeleton
 - [x] PostgreSQL instance provisioned and connected
 - [ ] Project board / weekly milestone log tooling on GitHub (this file serves as the log for now)
+
+## Deliverable status (Phase 1)
+
+- [x] CRUD screens: Add / Edit / Delete application
+- [x] List view with sorting (date, status, company)
+- [x] Search bar by company name
+- [x] Basic authentication (Google Sign-In, backend-verified)
+- [ ] Real Google Client ID wired up and tested (currently verified via a manually-issued JWT only)
