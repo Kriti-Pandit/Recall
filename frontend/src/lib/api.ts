@@ -18,6 +18,9 @@ export interface Application {
   notes: string | null
   jd_text: string | null
   jd_source_url: string | null
+  resume_id: string | null
+  resume_file_name: string | null
+  resume_version_label: string | null
   created_at: string
   updated_at: string
 }
@@ -36,12 +39,20 @@ export interface ApplicationInput {
   notes?: string | null
   jd_text?: string | null
   jd_source_url?: string | null
+  resume_id?: string | null
 }
 
 export interface CurrentUser {
   id: string
   email: string
   name: string
+}
+
+export interface Resume {
+  id: string
+  version_label: string
+  file_name: string
+  uploaded_at: string
 }
 
 const TOKEN_KEY = 'trackmyapply_token'
@@ -112,4 +123,42 @@ export const api = {
   updateApplication: (id: string, data: Partial<ApplicationInput>) =>
     request<Application>(`/applications/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteApplication: (id: string) => request<void>(`/applications/${id}`, { method: 'DELETE' }),
+  listResumes: () => request<Resume[]>('/resumes'),
+  uploadResume: async (file: File, versionLabel: string) => {
+    const token = getToken()
+    const form = new FormData()
+    form.append('file', file)
+    form.append('version_label', versionLabel)
+    const res = await fetch('/api/resumes', {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      body: form,
+    })
+    if (!res.ok) {
+      let detail = res.statusText
+      try {
+        const body = await res.json()
+        detail = body.detail ?? detail
+      } catch {
+        // response had no JSON body
+      }
+      throw new ApiError(res.status, detail)
+    }
+    return res.json() as Promise<Resume>
+  },
+  deleteResume: (id: string) => request<void>(`/resumes/${id}`, { method: 'DELETE' }),
+  downloadResume: async (id: string, fileName: string) => {
+    const token = getToken()
+    const res = await fetch(`/api/resumes/${id}/file`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
+    if (!res.ok) throw new ApiError(res.status, res.statusText)
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    link.click()
+    URL.revokeObjectURL(url)
+  },
 }

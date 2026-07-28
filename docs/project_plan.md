@@ -51,9 +51,18 @@ Per roadmap §Phase 0: first-class support for **LinkedIn**, **Naukri**, and **m
   - **Manual step still needed (not exposed by the GitHub API):** open the project and set a Board view's "Group by" to `Phase` to get literal Phase columns — the GraphQL API has no mutations for view/layout configuration.
 - **Still open:** real Google OAuth Client ID hasn't been provided yet, so Google Sign-In is still only verified via a manually-issued JWT, not real end-to-end sign-in.
 
-### Week 5 — planned
+### Week 5 (2026-07-28) — Phase 2: Resume Attachment & Versioning
+- **Backend:** `POST /api/resumes` (multipart upload — validates `.pdf` extension, `%PDF-` magic bytes, and a 10 MB size cap before touching disk), `GET /api/resumes` (list, newest first), `GET /api/resumes/{id}/file` (download, ownership-checked), `DELETE /api/resumes/{id}` (removes DB row + file from disk). Files are stored under `backend/uploads/<uuid>.pdf`; the original filename is kept separately in the DB for display so on-disk names never depend on user input.
+- `Application.resume_id` is now exposed on the create/update/read schemas, with an explicit ownership check so a user can't attach another user's resume by guessing/forging a UUID.
+- Deleting a resume that's attached to an application correctly detaches it (`resume_id` → `null`) rather than erroring, verified via the existing DB `ON DELETE SET NULL` — no ORM cascade bug this time since, unlike the Phase 1 delete bug, `Resume` has no back-populated collection of `Application`s for the unit-of-work to mismanage.
+- **Frontend:** new Resume Library page (`/resumes`) — upload with a version label, list, download (fetched as an authenticated blob since the endpoint needs a Bearer token, not a plain link), delete. The application form now has a "Resume version" dropdown, and the list view shows which resume version is attached per application.
+- **Verified end-to-end via Playwright**: seeded-JWT login → upload a resume → create an application with it attached → list view shows the attached version label → edit view correctly pre-selects it → delete both → zero console errors.
+- **Still open:** real Google OAuth Client ID hasn't been provided yet, so Google Sign-In is still only verified via a manually-issued JWT, not real end-to-end sign-in.
+
+### Week 6 — planned
 - Wire the real Google Client ID once provided; test actual Google sign-in end-to-end.
-- Start Phase 2 (Week 5–6): resume upload + versioning, attach a resume to an application.
+- (Stretch, time-permitting) Simple diff viewer between two resume text versions.
+- Start Phase 3 (Week 6–9): Chrome Manifest V3 extension for LinkedIn/Naukri auto-capture.
 
 ## Deliverable status (Phase 0)
 
@@ -71,3 +80,10 @@ Per roadmap §Phase 0: first-class support for **LinkedIn**, **Naukri**, and **m
 - [x] Search bar by company name
 - [x] Basic authentication (Google Sign-In, backend-verified)
 - [ ] Real Google Client ID wired up and tested (currently verified via a manually-issued JWT only)
+
+## Deliverable status (Phase 2)
+
+- [x] File upload for resumes (PDF)
+- [x] Resume library — view all uploaded versions
+- [x] Attach a specific resume version to an application
+- [ ] (Stretch) Diff viewer between two resume text versions

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { api, type ApplicationInput, type Platform, type SalaryType, type Status } from '../lib/api'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { api, type ApplicationInput, type Platform, type Resume, type SalaryType, type Status } from '../lib/api'
 
 const emptyForm: ApplicationInput = {
   company_name: '',
@@ -16,6 +16,7 @@ const emptyForm: ApplicationInput = {
   notes: '',
   jd_text: '',
   jd_source_url: '',
+  resume_id: null,
 }
 
 export default function ApplicationForm() {
@@ -27,6 +28,11 @@ export default function ApplicationForm() {
   const [loading, setLoading] = useState(isEdit)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [resumes, setResumes] = useState<Resume[]>([])
+
+  useEffect(() => {
+    api.listResumes().then(setResumes).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!id) return
@@ -47,6 +53,7 @@ export default function ApplicationForm() {
           notes: a.notes ?? '',
           jd_text: a.jd_text ?? '',
           jd_source_url: a.jd_source_url ?? '',
+          resume_id: a.resume_id,
         }),
       )
       .catch(() => setError('Could not load this application.'))
@@ -187,6 +194,30 @@ export default function ApplicationForm() {
             </Field>
           )}
         </div>
+
+        <Field label="Resume version">
+          <select
+            value={form.resume_id ?? ''}
+            onChange={(e) => update('resume_id', e.target.value || null)}
+            className="input"
+          >
+            <option value="">— none —</option>
+            {resumes.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.version_label}
+              </option>
+            ))}
+          </select>
+          {resumes.length === 0 && (
+            <span className="text-xs text-neutral-500">
+              No resumes uploaded yet.{' '}
+              <Link to="/resumes" className="underline">
+                Upload one
+              </Link>
+              .
+            </span>
+          )}
+        </Field>
 
         <Field label="Job description (full snapshot)">
           <textarea

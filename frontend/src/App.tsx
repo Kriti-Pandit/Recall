@@ -3,6 +3,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import ApplicationForm from './pages/ApplicationForm'
 import ApplicationsList from './pages/ApplicationsList'
 import Login from './pages/Login'
+import ResumeLibrary from './pages/ResumeLibrary'
 
 function App() {
   return (
@@ -29,6 +30,14 @@ function App() {
         element={
           <ProtectedRoute>
             <ApplicationForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/resumes"
+        element={
+          <ProtectedRoute>
+            <ResumeLibrary />
           </ProtectedRoute>
         }
       />

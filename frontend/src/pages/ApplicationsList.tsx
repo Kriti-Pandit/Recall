@@ -60,6 +60,9 @@ export default function ApplicationsList() {
       <header className="border-b border-neutral-200 dark:border-neutral-800 px-6 py-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold">TrackMyApply</h1>
         <div className="flex items-center gap-4 text-sm text-neutral-500">
+          <Link to="/resumes" className="hover:text-neutral-900 dark:hover:text-neutral-100">
+            Resume library
+          </Link>
           <span>{user?.name}</span>
           <button onClick={logout} className="hover:text-neutral-900 dark:hover:text-neutral-100">
             Sign out
@@ -117,6 +120,7 @@ export default function ApplicationsList() {
                 </p>
                 <p className="text-xs text-neutral-500">
                   {a.platform} · applied {a.applied_date}
+                  {a.resume_version_label && <> · resume: {a.resume_version_label}</>}
                 </p>
               </Link>
               <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${STATUS_COLOR[a.status]}`}>

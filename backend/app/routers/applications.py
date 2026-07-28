@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.core.security import get_current_user
 from app.db.session import get_db
-from app.models import Application, JobDescription, User
+from app.models import Application, JobDescription, Resume, User
 from app.schemas.application import ApplicationCreate, ApplicationRead, ApplicationUpdate
 
 router = APIRouter(prefix="/api/applications", tags=["applications"])
@@ -34,6 +34,9 @@ def _to_read(application: Application) -> ApplicationRead:
         notes=application.notes,
         jd_text=application.job_description.raw_text if application.job_description else None,
         jd_source_url=application.job_description.source_url if application.job_description else None,
+        resume_id=application.resume_id,
+        resume_file_name=application.resume.file_name if application.resume else None,
+        resume_version_label=application.resume.version_label if application.resume else None,
         created_at=application.created_at,
         updated_at=application.updated_at,
     )
@@ -42,13 +45,25 @@ def _to_read(application: Application) -> ApplicationRead:
 def _get_owned_application(db: Session, current_user: User, application_id: uuid.UUID) -> Application:
     application = (
         db.query(Application)
-        .options(joinedload(Application.job_description))
+        .options(joinedload(Application.job_description), joinedload(Application.resume))
         .filter(Application.id == application_id, Application.user_id == current_user.id)
         .one_or_none()
     )
     if application is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
     return application
+
+
+def _check_resume_ownership(db: Session, current_user: User, resume_id: uuid.UUID | None) -> None:
+    if resume_id is None:
+        return
+    exists = (
+        db.query(Resume.id)
+        .filter(Resume.id == resume_id, Resume.user_id == current_user.id)
+        .one_or_none()
+    )
+    if exists is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Resume not found")
 
 
 @router.get("", response_model=list[ApplicationRead])
@@ -64,7 +79,7 @@ def list_applications(
 
     query = (
         db.query(Application)
-        .options(joinedload(Application.job_description))
+        .options(joinedload(Application.job_description), joinedload(Application.resume))
         .filter(Application.user_id == current_user.id)
     )
     if search:
@@ -82,6 +97,8 @@ def create_application(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    _check_resume_ownership(db, current_user, body.resume_id)
+
     data = body.model_dump(exclude={"jd_text", "jd_source_url"}, exclude_none=True)
     application = Application(user_id=current_user.id, **data)
     db.add(application)
@@ -118,6 +135,8 @@ def update_application(
     current_user: User = Depends(get_current_user),
 ):
     application = _get_owned_application(db, current_user, application_id)
+    if "resume_id" in body.model_fields_set:
+        _check_resume_ownership(db, current_user, body.resume_id)
     data = body.model_dump(exclude={"jd_text", "jd_source_url"}, exclude_unset=True)
     for field, value in data.items():
         setattr(application, field, value)

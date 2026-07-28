@@ -20,6 +20,7 @@ class ApplicationBase(BaseModel):
     notes: str | None = None
     jd_text: str | None = Field(default=None, description="Full job description snapshot")
     jd_source_url: str | None = None
+    resume_id: uuid.UUID | None = None
 
 
 class ApplicationCreate(ApplicationBase):
@@ -40,6 +41,7 @@ class ApplicationUpdate(BaseModel):
     notes: str | None = None
     jd_text: str | None = None
     jd_source_url: str | None = None
+    resume_id: uuid.UUID | None = None
 
 
 class ApplicationRead(BaseModel):
@@ -57,6 +59,9 @@ class ApplicationRead(BaseModel):
     notes: str | None
     jd_text: str | None = None
     jd_source_url: str | None = None
+    resume_id: uuid.UUID | None = None
+    resume_file_name: str | None = None
+    resume_version_label: str | None = None
     created_at: datetime
     updated_at: datetime
 
