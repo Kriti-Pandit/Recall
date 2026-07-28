@@ -44,9 +44,15 @@ Per roadmap §Phase 0: first-class support for **LinkedIn**, **Naukri**, and **m
 - **Verified end-to-end via Playwright** (headless Chromium, since this machine has no browser-automation CLI preinstalled): logged-out `/` correctly redirects to `/login`; with a seeded JWT, add → search-filter → status edit → delete all worked with zero console errors. Screenshots confirmed visually.
 - Company-search deliverable met: added test applications, searched by company name, got instant, correct results (Phase 1's stated milestone demo).
 
-### Week 4 — planned
-- Wire the real Google Client ID once provided; test actual Google sign-in end-to-end (not just the JWT-seeded path).
-- Set up GitHub project board with Phase 1–8 columns from the roadmap.
+### Week 4 (2026-07-27)
+- **GitHub Project board set up:** [github.com/users/Kriti-Pandit/projects/1](https://github.com/users/Kriti-Pandit/projects/1) ("TrackMyApply Roadmap"), linked to `Kriti-Pandit/Recall`. Note: GitHub Projects can only be linked to a repo if the project is owned by the *same account* as the repo (a repo collaborator can't create a project directly under the repo owner) — this required installing `gh` CLI and authenticating as the `Kriti-Pandit` account specifically, not the collaborator account used for git commits.
+  - Added a custom single-select `Phase` field with all 9 roadmap phases (Phase 0–8), alongside the default `Status` field (Todo/In Progress/Done).
+  - Seeded 31 items from the roadmap's deliverables across all phases, with Phase 0 and Phase 1 items marked Done and everything else Todo.
+  - **Manual step still needed (not exposed by the GitHub API):** open the project and set a Board view's "Group by" to `Phase` to get literal Phase columns — the GraphQL API has no mutations for view/layout configuration.
+- **Still open:** real Google OAuth Client ID hasn't been provided yet, so Google Sign-In is still only verified via a manually-issued JWT, not real end-to-end sign-in.
+
+### Week 5 — planned
+- Wire the real Google Client ID once provided; test actual Google sign-in end-to-end.
 - Start Phase 2 (Week 5–6): resume upload + versioning, attach a resume to an application.
 
 ## Deliverable status (Phase 0)
@@ -56,7 +62,7 @@ Per roadmap §Phase 0: first-class support for **LinkedIn**, **Naukri**, and **m
 - [x] Design full database schema
 - [x] Set up dev environment: React frontend, backend skeleton
 - [x] PostgreSQL instance provisioned and connected
-- [ ] Project board / weekly milestone log tooling on GitHub (this file serves as the log for now)
+- [x] Project board / weekly milestone log tooling on GitHub — [project board](https://github.com/users/Kriti-Pandit/projects/1) (this file remains the detailed log)
 
 ## Deliverable status (Phase 1)
 
