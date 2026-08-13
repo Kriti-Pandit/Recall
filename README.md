@@ -7,7 +7,7 @@ An India-first job application context & memory tracker. Full spec and roadmap: 
 ```
 backend/     FastAPI + SQLAlchemy + PostgreSQL
 frontend/    React + TypeScript + Tailwind (Vite)
-extension/   Chrome Manifest V3 extension (Phase 3, not yet started)
+extension/   Chrome Manifest V3 extension — LinkedIn/Naukri job capture (see extension/README.md)
 docs/        Schema diagram, project plan / milestone log
 ```
 
@@ -20,7 +20,7 @@ python -m venv .venv
 .venv\Scripts\activate        # Windows
 pip install -r requirements.txt
 cp .env.example .env          # then point DATABASE_URL at your Postgres instance
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 8001
 ```
 
 ### Frontend
@@ -30,7 +30,7 @@ cp frontend/.env.example frontend/.env   # set VITE_GOOGLE_CLIENT_ID, see Auth b
 npm run dev --workspace frontend
 ```
 
-Frontend dev server proxies `/api/*` to `http://localhost:8000`.
+Frontend dev server proxies `/api/*` to `http://localhost:8001`. (Backend runs on 8001, not the more common 8000, since something else on this machine — VS Code itself — tends to occupy 8000.)
 
 ### Auth (Google Sign-In)
 

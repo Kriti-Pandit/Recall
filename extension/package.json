@@ -2,5 +2,5 @@
   "name": "extension",
   "private": true,
   "version": "0.0.0",
-  "description": "TrackMyApply Chrome Manifest V3 extension — scaffolded in Phase 3 (Week 6-9)."
+  "description": "TrackMyApply Chrome Manifest V3 extension — LinkedIn/Naukri job capture, built in Phase 3 (Week 6-9)."
 }

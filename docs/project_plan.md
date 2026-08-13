@@ -59,10 +59,21 @@ Per roadmap §Phase 0: first-class support for **LinkedIn**, **Naukri**, and **m
 - **Verified end-to-end via Playwright**: seeded-JWT login → upload a resume → create an application with it attached → list view shows the attached version label → edit view correctly pre-selects it → delete both → zero console errors.
 - **Still open:** real Google OAuth Client ID hasn't been provided yet, so Google Sign-In is still only verified via a manually-issued JWT, not real end-to-end sign-in.
 
-### Week 6 — planned
-- Wire the real Google Client ID once provided; test actual Google sign-in end-to-end.
+### Week 6 (2026-08-13)
+- **Google Sign-In fully closed out:** got a real OAuth Client ID from Google Cloud Console, wired it into `frontend/.env` (`VITE_GOOGLE_CLIENT_ID`) and `backend/.env` (`GOOGLE_CLIENT_ID`, plus a real random `JWT_SECRET`). Hit Google's documented propagation delay after creating the client ("5 minutes to a few hours to take effect") before the origin was recognized — not a config bug, just needed to wait.
+- Local dev backend port moved from 8000 → 8001 permanently: something on this machine (VS Code itself) tends to bind port 8000, causing repeated collisions. Updated `vite.config.ts` proxy and the README accordingly.
+- **Phase 3 (Chrome Extension) built:** Manifest V3 extension in `extension/` — see [`extension/README.md`](../extension/README.md) for full details.
+  - Auth bridge: a content script on the web app mirrors its login token into the extension's storage, so the extension is signed in automatically whenever you're signed into the web app.
+  - Content scripts for LinkedIn (`jobs/*`) and Naukri (`job-listings*`) job pages scrape title, company, JD text, and (Naukri) salary text, with ordered-fallback selectors — substring attribute selectors (`[class*="..."]`) are preferred where possible since they survive Naukri's hashed CSS-module class names regenerating on every deploy.
+  - Popup shows a preview, flags any fields it couldn't find (rather than failing silently), and a "Save to Tracker" button POSTs straight to the existing `/api/applications` endpoint.
+  - **Important caveat**: built and tested without live access to LinkedIn/Naukri (no browser access to the real sites in this environment). Verified rigorously via Playwright against realistic mock HTML fixtures matching documented page structure — not the live sites. **Needs a manual sanity check against a real LinkedIn/Naukri job posting** before relying on it; selectors may need adjusting if they don't match current live markup.
+  - Confirmed empirically (not just from docs) that Manifest V3 extension pages/background with `host_permissions` covering `localhost:8001` bypass CORS entirely — no backend changes were needed for the extension to call the API.
+- **Testing note:** MV3 service workers did not start under Playwright's headless Chromium on this machine; testing required a real (non-headless) browser window launched via `launch_persistent_context`.
+
+### Week 7 — planned
+- **You: sanity-check the extension against a real LinkedIn and Naukri job posting** — this is the one thing that couldn't be verified in this environment.
 - (Stretch, time-permitting) Simple diff viewer between two resume text versions.
-- Start Phase 3 (Week 6–9): Chrome Manifest V3 extension for LinkedIn/Naukri auto-capture.
+- Start Phase 4 (Week 9–10): India-specific application types (campus drive, referral) and salary formatting polish.
 
 ## Deliverable status (Phase 0)
 
@@ -79,7 +90,7 @@ Per roadmap §Phase 0: first-class support for **LinkedIn**, **Naukri**, and **m
 - [x] List view with sorting (date, status, company)
 - [x] Search bar by company name
 - [x] Basic authentication (Google Sign-In, backend-verified)
-- [ ] Real Google Client ID wired up and tested (currently verified via a manually-issued JWT only)
+- [x] Real Google Client ID wired up and tested
 
 ## Deliverable status (Phase 2)
 
@@ -87,3 +98,12 @@ Per roadmap §Phase 0: first-class support for **LinkedIn**, **Naukri**, and **m
 - [x] Resume library — view all uploaded versions
 - [x] Attach a specific resume version to an application
 - [ ] (Stretch) Diff viewer between two resume text versions
+
+## Deliverable status (Phase 3)
+
+- [x] Build Manifest V3 extension
+- [x] Content script: LinkedIn job page capture
+- [x] Content script: Naukri job page capture
+- [x] "Save to Tracker" button → authenticated API call
+- [x] Handle edge cases: missing fields, page structure changes (fallback selectors + visible warnings)
+- [ ] **Sanity-checked against real LinkedIn/Naukri pages** (only tested against mock fixtures so far — see Week 6 log)
